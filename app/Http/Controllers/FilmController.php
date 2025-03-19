@@ -46,7 +46,7 @@ public function search(Request $request)
         }
     } else {
         // Si aucun terme de recherche n'est donné, récupérer tous les films
-        $response = Http::get('http://localhost:8080/toad/film/all');
+        $response = Http::get('http://localhost:8080/toad/film/getbyid');
         
         if ($response->successful()) {
             // Récupérer tous les films

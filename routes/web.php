@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\EditController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\AuthController;
+
 
 
 Route::get('/', function () {
@@ -40,6 +42,9 @@ Route::put('/films/{id}/edit', [EditController::class, 'update'])->name('Edit.up
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
 Route::get('/inventory/{id}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
 Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
+
+
+
 
 
 require __DIR__.'/auth.php';

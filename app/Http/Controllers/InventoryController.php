@@ -4,70 +4,91 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use App\Http\Controllers\Controller;
 
 class InventoryController extends Controller
 {
+    /**
+     * Afficher la liste de l'inventaire avec les films associés.
+     */
     public function index()
-{
-    // Récupérer l'inventaire
-    $responseInventory = Http::get('http://localhost:8080/toad/inventory/all');
-    
-    // Vérifier si la requête pour l'inventaire a réussi
-    if ($responseInventory->successful()) {
-        $inventory = $responseInventory->json();
-    } else {
-        $inventory = [];
-    }
+    {
+        // Récupérer l'inventaire depuis l'API
+        $responseInventory = Http::get('http://localhost:8080/toad/inventory/getStockByStore');
 
-    // Récupérer les films
-    $responseFilms = Http::get('http://localhost:8080/toad/film/all');
-    if ($responseFilms->successful()) {
-        $films = $responseFilms->json();
-    } else {
-        $films = [];
-    }
-
-    // Associer les titres des films à l'inventaire
-    foreach ($inventory as &$item) {
-        // Trouver le titre du film basé sur l'ID du film dans l'inventaire
-        $film = collect($films)->firstWhere('filmId', $item['filmId']);
-        
-        // Vérifier si un film avec cet ID a été trouvé et si le titre existe
-        if ($film && isset($film['title'])) {
-            $item['title'] = $film['title']; // Associer le titre au film
-            $item['releaseYear'] = $film['releaseYear']; // Ajouter l'année de sortie (si nécessaire)
-        } else {
-            $item['title'] = 'Titre non disponible'; // Gérer le cas où le titre est absent
-            $item['releaseYear'] = 'Inconnu'; // Gérer le cas où l'année de sortie est absente
+        if (!$responseInventory->successful()) {
+            return redirect()->route('dashboard')->withErrors('Erreur lors de la récupération de l\'inventaire.');
         }
-    }
 
-    // Passer l'inventaire avec les titres associés à la vue
-    return view('inventory', compact('inventory'));
-}
-public function edit($id)
-{
-    // Call the API to get the film and its stock data
-    $response = Http::get('http://localhost:8080/toad/inventory/getStockByStore', [
-        'id' => $id
-    ]);
+        $inventory = json_decode(trim($responseInventory->body()), true);
 
-    // Check if the request was successful
-    if ($response->successful()) {
-        $film = $response->json(); // Store the response data in $film
+        if ($inventory === null) {
+            dd('Erreur JSON Inventory:', json_last_error_msg(), $responseInventory->body());
+        }
+
+        // Vérification si l'inventaire est vide
+        if (empty($inventory)) {
+            return view('inventory.index')->with('message', 'Aucun élément dans l\'inventaire.');
+        }
+
+        // Récupérer les films
+        $responseFilms = Http::get('http://localhost:8080/toad/inventory/getStockByStore');
+
+        if (!$responseFilms->successful()) {
+            return redirect()->route('dashboard')->withErrors('Erreur lors de la récupération des films.');
+        }
+
+        $films = json_decode(trim($responseFilms->body()), true);
+
+        if ($films === null) {
+            dd('Erreur JSON Films:', json_last_error_msg(), $responseFilms->body());
+        }
         
-        // Debugging: Let's make sure $film contains what we expect
-        dd($film); // This will display the data so we can inspect it
 
-        return view('inventory', ['film' => $film]); // Pass the film data to the view
-    } else {
-        return redirect()->route('inventory.index')->withErrors('Film not found.');
+        // Associer les titres des films à l'inventaire
+        foreach ($inventory as &$item) {
+            $film = collect($films)->firstWhere('filmId', $item['filmId']);
+
+            // Ajouter les informations du film à l'inventaire
+            $item['title'] = $film['title'] ?? 'Titre non disponible';
+            $item['quantity'] = $film['quantity'] ?? 'Quantité non disponible';
+        }
+
+        
+        return view('films.index', ['films' => $inventory]);
+
+
     }
+
+    /**
+     * Afficher le formulaire d'édition du stock d'un film.
+     */
+    public function edit($id)
+{
+    // Appel à l'API avec l'ID dans la query string
+    $response = Http::get("http://localhost:8080/toad/inventory/getStockByStore");
+    
+
+
+    if (!$response->successful()) {
+        return redirect()->route('inventory.index')->withErrors('Échec de la récupération des données du stock.');
+    }
+
+    $films = json_decode(trim($response->body()), true);
+
+
+    if ($films === null) {
+        dd('Erreur JSON Stock:', json_last_error_msg(), $response->body());
+    }
+
+    // Trouver le film correspondant
+    $film = collect($films)->firstWhere('filmId', $id);
+
+    if (!$film) {
+        return redirect()->route('inventory.index')->withErrors('Film non trouvé.');
+    }
+
+    return view('inventory.edit', compact('film'))->with('debug', $film);
+
 }
-
-
-
-
 
 }

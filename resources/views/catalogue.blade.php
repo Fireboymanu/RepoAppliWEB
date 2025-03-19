@@ -27,6 +27,10 @@
                             <p><strong>Sortie :</strong> {{ $film['releaseYear']  }}</p>
                             <!-- bouton pour afficher le détail du film selectionner-->
                             <a href="{{ route('films.show', $film['filmId']) }}" class="btn btn-primary">Détails 🎥🍿</a>
+
+                            <a href="{{ route('Edit.edit', ['id' => $film['filmId']]) }}" class="btn btn-primary">Modifier le film 🎥✏️🍿</a>
+
+
                         </div>
                     </div>
                 </div>
