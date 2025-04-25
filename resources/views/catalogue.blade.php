@@ -9,6 +9,7 @@
 <body class="bg-light">
     <div class="container mt-5">
         <h1 class="text-center mb-4">🎬 Catalogue des Films</h1>
+
         <!-- Formulaire de recherche -->
         <form action="{{ route('films.search') }}" method="GET" class="mb-4">
             <div class="input-group">
@@ -23,13 +24,13 @@
                     <div class="card shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title">{{ $film['title'] }}</h5>
-                            <p class="card-text text-muted">{{ Str::limit($film['description'], 100) }}</p>
-                            <p><strong>Sortie :</strong> {{ $film['releaseYear']  }}</p>
-                            <!-- bouton pour afficher le détail du film selectionner-->
+                            <p><strong>Sortie :</strong> {{ $film['releaseYear'] }}</p>
+                            
+
+                            <!-- Liens vers les actions -->
                             <a href="{{ route('films.show', $film['filmId']) }}" class="btn btn-primary">Détails 🎥🍿</a>
-
-                            <a href="{{ route('Edit.edit', ['id' => $film['filmId']]) }}" class="btn btn-primary">Modifier le film 🎥✏️🍿</a>
-
+                            <a href="{{ route('Edit.edit', ['id' => $film['filmId']]) }}" class="btn btn-warning">Modifier 🎥✏️</a>
+                            <a href="{{ route('films.create') }}" class="btn btn-success">Ajouter un film 🎥✏️🍿</a>
 
                         </div>
                     </div>

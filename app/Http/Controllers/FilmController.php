@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Film;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
+ 
+ 
 
 class FilmController extends Controller
 {
@@ -14,7 +17,10 @@ class FilmController extends Controller
     public function index(Request $request)
 {
     // Requête pour obtenir tous les films depuis l'API
-    $response = Http::get('http://localhost:8080/toad/film/all');
+    //$response = Http::get('http://localhost:8080/toad/film/all');
+    $adress = env('TOAD_SERVER');
+    $port = env('TOAD_PORT');
+    $response = Http::get($adress.$port."/toad/film/all");
     
     // Vérifier si la requête a réussi
     if ($response->successful()) {
@@ -34,7 +40,10 @@ public function search(Request $request)
 
     if ($query) {
         // Effectuer la recherche par le terme de recherche
-        $response = Http::get("http://localhost:8080/toad/film/search", [
+        //$response = Http::get("http://localhost:8080/toad/film/search", 
+        $adress = env('TOAD_SERVER');
+        $port = env('TOAD_PORT');
+        $response = Http::get($adress.$port."/toad/film/search",[
             'query' => $query
         ]);
 
@@ -46,7 +55,10 @@ public function search(Request $request)
         }
     } else {
         // Si aucun terme de recherche n'est donné, récupérer tous les films
-        $response = Http::get('http://localhost:8080/toad/film/getbyid');
+        //$response = Http::get('http://localhost:8080/toad/film/getbyid');
+        $adress = env('TOAD_SERVER');
+        $port = env('TOAD_PORT');
+        $response = Http::get($adress.$port."/toad/film/getbyid");
         
         if ($response->successful()) {
             // Récupérer tous les films
@@ -68,15 +80,35 @@ public function search(Request $request)
      */
     public function create()
     {
-        //
+        return view('films.create');  // Charge la vue create.blade.php
     }
+    
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
+        // Récupérer les données envoyées depuis le formulaire
+        $data = $request->all();
+        $adress = env('TOAD_SERVER');
+        $port = env('TOAD_PORT');
+        $endpointAddFilm ='/toad/film/add';
+        $servRequest = $adress.$port;
+        $lastUpdate = Carbon::now()->format('Y-m-d H:i:s'); // Format attendu : 'YYYY-MM-DD HH:MM:SS'
+   
+        $data['lastUpdate'] = $lastUpdate;
+        // Envoyer ces données à l’API Spring
+        $response = Http::asForm()->post($servRequest.$endpointAddFilm,$data);
+        Log::info('Données envoyées à l\'API :', $data);
+        Log::info('Réponse de l\'API : ' . $response->body());
+ 
+        // Vérifier si l'API a bien répondu
+        if ($response->successful()) {
+            return response()->json(['message' => 'Film ajouté avec succès !']);
+        } else {
+            return response()->json(['message' => 'Erreur lors de l\'ajout du film'], 500);
+        }
     }
 
     /**
@@ -84,9 +116,13 @@ public function search(Request $request)
      */
     public function show($id)
     {
-        $url = "http://localhost:8080/toad/film/getById?id={$id}"; 
+        //$url = "http://localhost:8080/toad/film/getById?id={$id}";
+        $adress = env('TOAD_SERVER');
+        $port = env('TOAD_PORT');
+        $url = $adress.$port."/toad/film/getById?id={$id}";
         $response = Http::get($url);
 
+        dd($url);
         if ($response->ok()) {
             $film = $response->json();  
             return view('film-details', compact('film')); // Charge la vue film-details.blade.php

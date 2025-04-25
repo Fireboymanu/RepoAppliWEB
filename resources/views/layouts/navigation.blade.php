@@ -24,11 +24,20 @@
         {{ __('Dashboard') }}
     </x-nav-link>
 
+
+<!-- Lien pour aller vers le stock des films -->
+<x-nav-link :href="route('inventory.index')" :active="request()->routeIs('inventory.index')">
+    {{ __('Inventaire') }}
+</x-nav-link>
+
     <!-- Nouveau lien "Films" -->
     <x-nav-link :href="route('films.index')" :active="request()->routeIs('films.index')">
         {{ __('Films') }}
     </x-nav-link>
 </div>
+
+
+
 
 
             <!-- Settings Dropdown -->
