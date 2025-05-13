@@ -51,13 +51,26 @@ Route::get('/films/{id}/edit', [EditController::class, 'edit'])->name('Edit.edit
 Route::put('/films/{id}/edit', [EditController::class, 'update'])->name('Edit.update');
 
 
-
+Route::get('/dashboard', function () {
+    return view('dashboard'); // Assure-toi que cette vue existe
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 
 //Route pour afficher la view inventory ainsi que pour la modification du stock etc.
 Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
 Route::get('/inventory/{id}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
 Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
+
+
+Route::get('/inventory/create', [InventoryController::class, 'create'])->name('inventory.create');
+Route::post('/inventory', [InventoryController::class, 'store'])->name('inventory.store');
+
+Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+})->name('logout');
 
 
 

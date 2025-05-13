@@ -122,7 +122,7 @@ public function search(Request $request)
         $url = $adress.$port."/toad/film/getById?id={$id}";
         $response = Http::get($url);
 
-        dd($url);
+        
         if ($response->ok()) {
             $film = $response->json();  
             return view('film-details', compact('film')); // Charge la vue film-details.blade.php
